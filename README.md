@@ -118,4 +118,4 @@ Feel free to open issues or submit pull requests if you have improvements or wan
 ## 🔥 Author
 
 **Mehdi Karzari**  
-[Telegram (QM4RS](https://t.me/QM4RS)
+[Telegram (QM4RS)](https://t.me/QM4RS)
