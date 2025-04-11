@@ -27,46 +27,63 @@ Java.perform(() => {
       console.log('');
   }
 
+  function isNestedInit() {
+    const ExceptionCls = Java.use("java.lang.Exception");
+    const frames = ExceptionCls.$new().getStackTrace();
+    let hits = 0;
+    for (let i = 0; i < frames.length; i++) {
+      if (frames[i].getClassName() === "javax.crypto.Cipher" &&
+          frames[i].getMethodName() === "init") {
+        if (++hits > 1) return true;
+      }
+    }
+    return false;
+  }
+
   const ctx = new WeakMap();
 
   Cipher.init.overloads.forEach(o => {
-      o.implementation = function () {
-          const op = arguments[0].valueOf();
-          const mode = op === Cipher.ENCRYPT_MODE.value ? "ENCRYPT"
-                      : op === Cipher.DECRYPT_MODE.value ? "DECRYPT"
-                      : op;
+    o.implementation = function () {
 
-          let keyStr = "n/a";
-          try {
-              keyStr = encodeBytes(Java.cast(arguments[1], SecretKeySpec).getEncoded());
-          } catch (_) {
-              keyStr = arguments[1].getAlgorithm() + " (non‑SecretKeySpec)";
-          }
+      // اگه کال داخلیه، لاگ نگیر
+      if (isNestedInit())
+        return o.apply(this, arguments);
 
-          let iv = null, tagLength = null;
-          for (let i = 2; i < arguments.length; i++) {
-              const p = arguments[i];
-              if (!p) continue;
-              if (GCMParameterSpec.class.isInstance(p)) {
-                  const g = Java.cast(p, GCMParameterSpec);
-                  iv = encodeBytes(g.getIV());
-                  tagLength = g.getTLen();
-              } else if (IvParameterSpec.class.isInstance(p)) {
-                  iv = encodeBytes(Java.cast(p, IvParameterSpec).getIV());
-              }
-          }
+      // ----- لاگ‌گیری عادی -----
+      const op = arguments[0].valueOf();
+      const mode = op === Cipher.ENCRYPT_MODE.value ? "ENCRYPT"
+                : op === Cipher.DECRYPT_MODE.value ? "DECRYPT" : op;
 
-          logObj("Cipher.init", {
-              transformation: this.getAlgorithm(),
-              mode,
-              key: keyStr,
-              iv,
-              tagLength
-          });
+      let keyStr;
+      try {
+        keyStr = encodeBytes(Java.cast(arguments[1], SecretKeySpec).getEncoded());
+      } catch (_) {
+        keyStr = arguments[1].getAlgorithm() + " (non‑SecretKeySpec)";
+      }
 
-          ctx.set(this, { mode, transformation: this.getAlgorithm() });
-          return o.apply(this, arguments);
-      };
+      let iv = null, tagLength = null;
+      for (let i = 2; i < arguments.length; i++) {
+        const p = arguments[i];
+        if (!p) continue;
+        if (GCMParameterSpec.class.isInstance(p)) {
+          const g = Java.cast(p, GCMParameterSpec);
+          iv = encodeBytes(g.getIV());
+          tagLength = g.getTLen();
+        } else if (IvParameterSpec.class.isInstance(p)) {
+          iv = encodeBytes(Java.cast(p, IvParameterSpec).getIV());
+        }
+      }
+
+      logObj("Cipher.init", {
+        transformation: this.getAlgorithm(),
+        mode,
+        key: keyStr,
+        iv,
+        tagLength
+      });
+
+      return o.apply(this, arguments);
+    };
   });
 
   function grabBytes(args, idx) {
