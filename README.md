@@ -92,6 +92,66 @@ frida -U -f target.app.package -l frida-java-crypto-spy.js
   output: This is Secret
 ```
 
+### Using Backtrace 
+```bash
+[Cipher.init]
+  transformation: AES/GCM/NoPadding
+  mode: ENCRYPT
+  key: oHeY9IH3/QHKXVu3BCTbWQ==
+
+  iv: +koINuprs1G9C4ir
+
+  tagLength: 128
+📚 Backtrace (depth: 19) ↓↓↓
+1. com.android.internal.os.ZygoteInit.main(ZygoteInit.java:861)
+  2. com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:533)
+    3. java.lang.reflect.Method.invoke(Method.java:-2)
+      4. android.app.ActivityThread.main(ActivityThread.java:6669)
+        5. android.os.Looper.loop(Looper.java:193)
+          6. android.os.Handler.dispatchMessage(Handler.java:106)
+            7. android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808)
+              8. android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68)
+                9. android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108)
+                  10. android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78)
+                    11. android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048)
+                      12. android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2893)
+                        13. android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1271)
+                          14. android.app.Activity.performCreate(Activity.java:7137)
+                            15. android.app.Activity.performCreate(Activity.java:7146)
+                              16. com.mkv.aes.MainActivity.onCreate(MainActivity.kt:20)
+                                17. com.mkv.aes.Test.runAllTests(Test.java:81)
+                                  18. com.mkv.aes.AES.encryptGCMWithHMAC(AES.java:325)
+                                    19. javax.crypto.Cipher.init(Cipher.java:-2)
+📚 [End of Backtrace]
+
+
+[Cipher.doFinal]
+  input: This is Secret
+  output: 9Ga6l966s++p4i9OACbn3nRp95I9uZSUnJGRzU0H
+
+📚 Backtrace (depth: 19) ↓↓↓
+1. com.android.internal.os.ZygoteInit.main(ZygoteInit.java:861)
+  2. com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:533)
+    3. java.lang.reflect.Method.invoke(Method.java:-2)
+      4. android.app.ActivityThread.main(ActivityThread.java:6669)
+        5. android.os.Looper.loop(Looper.java:193)
+          6. android.os.Handler.dispatchMessage(Handler.java:106)
+            7. android.app.ActivityThread$H.handleMessage(ActivityThread.java:1808)
+              8. android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:68)
+                9. android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:108)
+                  10. android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:78)
+                    11. android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:3048)
+                      12. android.app.ActivityThread.performLaunchActivity(ActivityThread.java:2893)
+                        13. android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1271)
+                          14. android.app.Activity.performCreate(Activity.java:7137)
+                            15. android.app.Activity.performCreate(Activity.java:7146)
+                              16. com.mkv.aes.MainActivity.onCreate(MainActivity.kt:20)
+                                17. com.mkv.aes.Test.runAllTests(Test.java:81)
+                                  18. com.mkv.aes.AES.encryptGCMWithHMAC(AES.java:326)
+                                    19. javax.crypto.Cipher.doFinal(Cipher.java:-2)
+📚 [End of Backtrace]
+```
+
 ---
 
 ## 📌 Notes
