@@ -59,11 +59,17 @@ dist/frida-java-crypto-spy-frida17.js
 
 Its checksum is tracked in [`dist/SHA256SUMS`](dist/SHA256SUMS).
 
-This distribution pins `frida-java-bridge` 7.0.10. Versions 7.0.11 through 7.0.13
-have a confirmed native constructor-model regression on JVMTI-capable Android 11/16
-targets ([upstream issue #384](https://github.com/frida/frida-java-bridge/issues/384)).
-The regression is directly relevant because this agent hooks both `SecretKeySpec`
-constructors.
+This distribution pins `frida-java-bridge` 7.0.13 for current Android 16 ART support
+and applies the narrow upstream-proposed constructor filter during compilation.
+Unpatched versions 7.0.11 through 7.0.13 have a confirmed native constructor-model
+regression on JVMTI-capable Android 11/16 targets
+([upstream issue #384](https://github.com/frida/frida-java-bridge/issues/384)). The
+regression is directly relevant because this agent hooks both `SecretKeySpec`
+constructors. Bridge 7.0.10 avoids that regression but cannot model `java/lang/Thread`
+on the tested Samsung Android 16 ART build, so it is not used as a downgrade.
+
+The reviewed one-hunk modification is stored under [`patches/`](patches/) and the
+build fails closed if the pinned upstream source no longer matches it.
 
 For FridaBox 17 On-device mode, import the compiled file and turn FridaBox's separate
 Java bridge toggle **off**; the compiled file already contains the compatible bridge.
@@ -299,6 +305,7 @@ java tests/CryptoHarness.java
 node tests/static-check.js
 node tests/hook-install-smoke.js
 node tests/runtime-mock.js
+node tests/frida17-bundle-check.js
 node --check frida-java-crypto-spy.js
 ```
 

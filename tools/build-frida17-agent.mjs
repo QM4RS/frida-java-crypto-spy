@@ -10,13 +10,35 @@ const outputDirectory = path.join(root, 'dist');
 const outputPath = path.join(outputDirectory, 'frida-java-crypto-spy-frida17.js');
 const temporaryDirectory = path.join(root, '.fjcs-agent-build');
 const entryPath = path.join(temporaryDirectory, 'entry.js');
+const bridgeModelPath = path.join(root, 'node_modules', 'frida-java-bridge',
+    'lib', 'class-model.js');
 const compiler = path.join(root, 'node_modules', '.bin',
     process.platform === 'win32' ? 'frida-compile.cmd' : 'frida-compile');
+const vulnerableModelCode = [
+    '      get_method_modifiers (jvmti, method, &modifiers);',
+    '',
+    '      model_add_method (model, name, method, modifiers);'
+].join('\n');
+const patchedModelCode = [
+    '      get_method_modifiers (jvmti, method, &modifiers);',
+    '',
+    "      if (name[0] != '<')",
+    '        model_add_method (model, name, method, modifiers);'
+].join('\n');
+
+let originalBridgeModel = null;
 
 try {
     fs.rmSync(temporaryDirectory, { recursive: true, force: true });
     fs.mkdirSync(temporaryDirectory);
     const source = fs.readFileSync(sourcePath, 'utf8');
+    originalBridgeModel = fs.readFileSync(bridgeModelPath, 'utf8');
+    if (!originalBridgeModel.includes(vulnerableModelCode)) {
+        throw new Error('Pinned frida-java-bridge no longer matches the reviewed ' +
+            'JVMTI constructor patch; inspect upstream before building.');
+    }
+    fs.writeFileSync(bridgeModelPath,
+        originalBridgeModel.replace(vulnerableModelCode, patchedModelCode), 'utf8');
     const entry = [
         "import JavaBridge from 'frida-java-bridge';",
         "if (typeof globalThis.Java === 'undefined') globalThis.Java = JavaBridge;",
@@ -39,5 +61,8 @@ try {
         `${digest}  ${path.relative(root, outputPath).replaceAll(path.sep, '/')}\n`, 'utf8');
     process.stdout.write(`Built ${path.relative(root, outputPath)}\n`);
 } finally {
+    if (originalBridgeModel !== null) {
+        fs.writeFileSync(bridgeModelPath, originalBridgeModel, 'utf8');
+    }
     fs.rmSync(temporaryDirectory, { recursive: true, force: true });
 }

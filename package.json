@@ -5,10 +5,9 @@
     "build:frida17": "node tools/build-frida17-agent.mjs"
   },
   "dependencies": {
-    "frida-java-bridge": "7.0.10"
+    "frida-java-bridge": "7.0.13"
   },
   "devDependencies": {
     "frida-compile": "19.0.5"
   }
 }
-
