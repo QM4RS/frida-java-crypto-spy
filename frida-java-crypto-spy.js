@@ -527,8 +527,9 @@ Java.perform(function () {
             }
         },
 
-        secretKeySpec: function (algorithm, snapshot, offset, length) {
+        secretKeySpec: function (signature, algorithm, snapshot, offset, length) {
             const lines = ['[SecretKeySpec] CREATE', '  ' + padLabel('Algorithm') + ': ' + algorithm];
+            lines.push('  ' + padLabel('Constructor') + ': ' + signature);
             if (offset !== null) {
                 lines.push('  ' + padLabel('Source Range') + ': offset ' + offset + ', length ' + length);
             }
@@ -707,6 +708,7 @@ Java.perform(function () {
         const key = state.key || {};
         const isAesRawKey = key.algorithm && key.algorithm.toUpperCase() === 'AES' && key.format === 'RAW';
         const fields = [
+            ['Overload', state.initOverload],
             ['Transformation', state.transformation],
             ['Mode', state.mode],
             ['Provider', CONFIG.showProvider ? state.provider : null],
@@ -778,6 +780,7 @@ Java.perform(function () {
     }
 
     Classes.Cipher.init.overloads.forEach(function (overload) {
+        const signature = methodSignature(overload);
         installSafeHook(overload, {
             before: function (_cipher, args) {
                 return preInit(args);
@@ -787,7 +790,9 @@ Java.perform(function () {
                 if (pre === null) {
                     return;
                 }
-                const state = CipherState.createAfterInit(cipher, postInit(cipher, pre));
+                const metadata = postInit(cipher, pre);
+                metadata.initOverload = signature;
+                const state = CipherState.createAfterInit(cipher, metadata);
                 const context = loggingContext(state.transformation);
                 if (CONFIG.logInit && context.allowed) {
                     logInit(state, context.frames);
@@ -1057,7 +1062,8 @@ Java.perform(function () {
                 }
                 const fingerprint = before.algorithm + ':' + ByteUtils.hex(before.key.bytes) + ':' + before.key.length;
                 if (rememberKey(fingerprint)) {
-                    Logger.secretKeySpec(before.algorithm, before.key, before.offset, before.length);
+                    Logger.secretKeySpec(signature, before.algorithm, before.key,
+                        before.offset, before.length);
                 }
             },
             error: function (_self, _args, _before, error) {

@@ -106,6 +106,7 @@ you do not need.
 
 ```text
 [Cipher #12][AES/GCM/NoPadding][DECRYPT] INIT
+  Overload            : int,java.security.Key,java.security.spec.AlgorithmParameterSpec
   Transformation      : AES/GCM/NoPadding
   Mode                : DECRYPT
   Key Algorithm       : AES
@@ -278,6 +279,23 @@ harness assertions.
 The mock-runtime test executes installed hook implementations, checks exact offset and
 ByteBuffer log ranges, verifies that original buffer marks/positions retain provider
 semantics, and confirms that the exact original exception object is rethrown.
+
+### Strict Android APK
+
+A signed, dependency-free Android test APK and its full source are available under
+[`demo-app/`](demo-app/README.md). It runs an adversarial on-device matrix covering all
+standard Cipher overloads, generated/explicit parameters, AndroidKeyStore,
+ByteBuffers, failure paths, large streams, non-AES algorithms, and concurrency while
+asserting actual results inside the app.
+
+**[Download strict-test APK](demo-app/releases/frida-java-crypto-spy-strict-test.apk)** ·
+[SHA-256](demo-app/releases/SHA256SUMS) ·
+[test source](demo-app/src/com/qm4rs/fridacryptospytest/StrictCryptoMatrix.java)
+
+```bash
+adb install -r demo-app/releases/frida-java-crypto-spy-strict-test.apk
+frida -U -f com.qm4rs.fridacryptospytest -l frida-java-crypto-spy.js
+```
 
 ## Limitations
 
