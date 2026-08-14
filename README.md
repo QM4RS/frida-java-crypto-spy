@@ -48,6 +48,36 @@ frida -U -f com.example.target -l frida-java-crypto-spy.js
 frida -U com.example.target -l frida-java-crypto-spy.js
 ```
 
+### Frida 17 raw Gadget / FridaBox On-device mode
+
+Frida 17 no longer embeds the Java bridge in raw GumJS Script interactions. Use the
+precompiled agent below when the loader does not bundle a bridge for you:
+
+```text
+dist/frida-java-crypto-spy-frida17.js
+```
+
+Its checksum is tracked in [`dist/SHA256SUMS`](dist/SHA256SUMS).
+
+This distribution pins `frida-java-bridge` 7.0.10. Versions 7.0.11 through 7.0.13
+have a confirmed native constructor-model regression on JVMTI-capable Android 11/16
+targets ([upstream issue #384](https://github.com/frida/frida-java-bridge/issues/384)).
+The regression is directly relevant because this agent hooks both `SecretKeySpec`
+constructors.
+
+For FridaBox 17 On-device mode, import the compiled file and turn FridaBox's separate
+Java bridge toggle **off**; the compiled file already contains the compatible bridge.
+Leaving both enabled loads two bridge copies and is unsupported. The plain
+`frida-java-crypto-spy.js` remains the preferred file for `frida` CLI/REPL and Frida
+16, where the attaching client supplies `Java`.
+
+To reproduce the bundled agent:
+
+```bash
+npm ci
+npm run build:frida17
+```
+
 Attaching after a `Cipher` was initialized still captures later calls, but key, mode,
 IV, and parameter metadata from the missed `init(...)` may be unavailable.
 
@@ -315,6 +345,8 @@ frida -U -f com.qm4rs.fridacryptospytest -l frida-java-crypto-spy.js
 - The desktop harness validates Java cryptographic semantics and buffer ranges. Final
   compatibility should also be checked on the target Android API/provider/Frida
   combination.
+- On raw Frida 17 Gadget Script interactions, use the bundled `dist/` agent or supply
+  a Java bridge explicitly. A plain source agent cannot create the missing bridge.
 
 ## License
 

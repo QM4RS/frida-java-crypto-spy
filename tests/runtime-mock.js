@@ -182,6 +182,7 @@ const classes = {
 const logs = [];
 const sandbox = {
     Java: {
+        performNow(callback) { callback(); },
         perform(callback) { callback(); },
         use(name) {
             if (!classes[name]) throw new Error(`unmocked Java.use(${name})`);

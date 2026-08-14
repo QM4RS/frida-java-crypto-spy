@@ -55,6 +55,7 @@ const genericClass = {
 
 const sandbox = {
     Java: {
+        performNow(callback) { callback(); },
         perform(callback) { callback(); },
         use(name) {
             if (name === 'javax.crypto.Cipher') return cipher;

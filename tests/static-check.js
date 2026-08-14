@@ -33,7 +33,8 @@ const requiredSafetyFeatures = [
     'cipher.getParameters()',
     'cipher.getProvider()',
     'key.getEncoded()',
-    'Classes.Cipher.updateAAD.overloads'
+    'Classes.Cipher.updateAAD.overloads',
+    'JavaApi.performNow'
 ];
 
 for (const fragment of requiredSafetyFeatures) {

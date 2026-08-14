@@ -87,7 +87,9 @@ and independently reimplemented around the generic `Cipher` contract.
 
 - **CONFIG** controls event categories, representations, filters, limits, provider
   visibility, and optional backtraces.
-- **Class cache** resolves Java wrappers once during `Java.perform`.
+- **Class cache** resolves boot-class wrappers once during `Java.performNow` (falling
+  back to `Java.perform` on older bridge APIs), so startup crypto is not missed while
+  waiting for the application class loader.
 - **ByteUtils** snapshots signed Java bytes, arrays, and ByteBuffers; formats strict
   printable UTF-8, HEX, and Base64; and carries full length separately from preview.
 - **CipherState** uses `System.identityHashCode` buckets plus Java equality and

@@ -3,6 +3,7 @@
  * Generic javax.crypto.Cipher instrumentation for Android.
  *
  * Edit CONFIG before loading. Logging is intentionally console-only.
+ * Use dist/frida-java-crypto-spy-frida17.js with raw Frida 17 Gadget scripts.
  */
 
 'use strict';
@@ -45,7 +46,7 @@ const CONFIG = {
     excludePackages: []
 };
 
-Java.perform(function () {
+function installHooks(Java) {
     function tryUse(className) {
         try {
             return Java.use(className);
@@ -1080,4 +1081,32 @@ Java.perform(function () {
     safeRun(function () {
         console.log('[frida-java-crypto-spy] Generic Cipher hooks installed');
     });
-});
+}
+
+(function start(JavaApi) {
+    if (JavaApi === null || JavaApi === undefined) {
+        try {
+            console.error('[frida-java-crypto-spy] Java bridge is unavailable. ' +
+                'Frida 17 raw scripts must bundle frida-java-bridge.');
+        } catch (_) {
+            // Nothing else can be done safely in a non-Java isolate.
+        }
+        return;
+    }
+
+    const perform = typeof JavaApi.performNow === 'function' ?
+        JavaApi.performNow : JavaApi.perform;
+    try {
+        console.log('[frida-java-crypto-spy] Agent evaluated; installing Java hooks');
+        perform.call(JavaApi, function () {
+            installHooks(JavaApi);
+        });
+    } catch (error) {
+        try {
+            console.error('[frida-java-crypto-spy] Hook installation failed: ' +
+                (error && error.stack ? error.stack : error));
+        } catch (_) {
+            // Never turn an instrumentation failure into an application failure.
+        }
+    }
+}(globalThis.Java));

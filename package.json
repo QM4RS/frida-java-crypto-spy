@@ -1,0 +1,14 @@
+{
+  "name": "frida-java-crypto-spy-agent",
+  "private": true,
+  "scripts": {
+    "build:frida17": "node tools/build-frida17-agent.mjs"
+  },
+  "dependencies": {
+    "frida-java-bridge": "7.0.10"
+  },
+  "devDependencies": {
+    "frida-compile": "19.0.5"
+  }
+}
+
